@@ -446,13 +446,11 @@ class HttpConnection implements IConnection {
     }
 
     final negotiateUrl = _resolveNegotiateUrl(url);
-    // final negotiateUrl = url;
     _logger?.finer("Sending negotiation request: $negotiateUrl");
     try {
       final SignalRHttpRequest options = SignalRHttpRequest(
           content: "", headers: headers, timeout: _options.requestTimeout);
       final response = await _httpClient.post(negotiateUrl, options: options);
-      // final response = await _httpClient.post(negotiateUrl, options: options);
 
       if (response.statusCode != 200) {
         return Future.error(GeneralError(
@@ -472,7 +470,6 @@ class HttpConnection implements IConnection {
         // So we set it equal to connectionId so all our logic can use connectionToken without being aware of the negotiate version
         negotiateResponse.connectionToken = negotiateResponse.connectionId;
       }
-
       return negotiateResponse;
     } catch (e) {
       _logger?.severe(
@@ -575,7 +572,6 @@ class HttpConnection implements IConnection {
     _transport!.onReceive = onreceive;
     _transport!.onClose = _stopConnection;
     return _transport!.connect(url, transferFormat, _options.headers);
-    // return _transport!.connect2(url, headers, transferFormat);
   }
 
   ITransport _resolveTransport(
