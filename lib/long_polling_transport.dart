@@ -23,6 +23,7 @@ class LongPollingTransport implements ITransport {
   late bool _running;
   Future<void>? _receiving;
   Exception? _closeError;
+  MessageHeaders? _headers;
 
   @override
   OnClose? onClose;
@@ -46,10 +47,12 @@ class LongPollingTransport implements ITransport {
   }
 
   @override
-  Future<void> connect(String? url, TransferFormat transferFormat) async {
+  Future<void> connect(String? url, TransferFormat transferFormat,
+      MessageHeaders? headers) async {
     assert(!isStringEmpty(url));
 
     _url = url;
+    _headers = headers;
 
     _logger?.finest("(LongPolling transport) Connecting");
 
@@ -60,7 +63,7 @@ class LongPollingTransport implements ITransport {
 
     final pollOptions = SignalRHttpRequest(
         abortSignal: _pollAbort.signal,
-        headers: MessageHeaders(),
+        headers: _headers ?? MessageHeaders(),
         timeout: 100000);
 
     final token = await _getAccessToken();
@@ -159,7 +162,7 @@ class LongPollingTransport implements ITransport {
           new GeneralError("Cannot send until the transport is connected"));
     }
     await sendMessage(_logger, "LongPolling", _httpClient, _url,
-        _accessTokenFactory, data, _logMessageContent);
+        _accessTokenFactory, data, _logMessageContent, _headers);
   }
 
   @override

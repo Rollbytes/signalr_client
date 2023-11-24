@@ -52,8 +52,15 @@ Future<void> sendMessage(
     String? url,
     AccessTokenFactory? accessTokenFactory,
     Object content,
-    bool logMessageContent) async {
+    bool logMessageContent,
+    MessageHeaders? _headers) async {
   MessageHeaders headers = MessageHeaders();
+  if (_headers != null) {
+    headers = _headers;
+  } else {
+    headers = MessageHeaders();
+  }
+
   if (accessTokenFactory != null) {
     final token = await accessTokenFactory();
     if (!isStringEmpty(token)) {

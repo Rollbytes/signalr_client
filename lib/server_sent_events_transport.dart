@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:logging/logging.dart';
 import 'package:sse_channel/sse_channel.dart';
+import 'ihub_protocol.dart';
 
 import 'errors.dart';
 import 'itransport.dart';
@@ -17,6 +18,7 @@ class ServerSentEventsTransport implements ITransport {
   final bool _logMessageContent;
   SseChannel? _sseClient;
   String? _url;
+  MessageHeaders? _headers;
 
   @override
   OnClose? onClose;
@@ -36,12 +38,14 @@ class ServerSentEventsTransport implements ITransport {
 
   // Methods
   @override
-  Future<void> connect(String? url, TransferFormat transferFormat) async {
+  Future<void> connect(String? url, TransferFormat transferFormat,
+      MessageHeaders? headers) async {
     assert(!isStringEmpty(url));
     _logger?.finest("(SSE transport) Connecting");
 
     // set url before accessTokenFactory because this.url is only for send and we set the auth header instead of the query string for send
     _url = url;
+    _headers = headers;
 
     if (_accessTokenFactory != null) {
       final token = await _accessTokenFactory!();
@@ -94,15 +98,8 @@ class ServerSentEventsTransport implements ITransport {
       return Future.error(
           new GeneralError("Cannot send until the transport is connected"));
     }
-    await sendMessage(
-      _logger,
-      "SSE",
-      _httpClient,
-      _url,
-      _accessTokenFactory,
-      data,
-      _logMessageContent,
-    );
+    await sendMessage(_logger, "SSE", _httpClient, _url, _accessTokenFactory,
+        data, _logMessageContent, _headers);
   }
 
   @override
